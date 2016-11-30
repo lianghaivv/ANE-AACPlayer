@@ -24,6 +24,7 @@ package com.freshplanet.ane.AirAACPlayer
     import flash.events.StatusEvent;
     import flash.external.ExtensionContext;
     import flash.system.Capabilities;
+    import flash.utils.ByteArray;
 
     public class AirAACPlayer extends EventDispatcher
     {
@@ -86,13 +87,21 @@ package com.freshplanet.ane.AirAACPlayer
 		
 		////////////////////////////////////////////////////////////////////////////////
 		// Getters
+
+		private static function isIOS():Boolean
+		{
+			return (Capabilities.manufacturer.indexOf("iOS") != -1);
+		}
+
+		private static function isAndroid():Boolean
+		{
+			return (Capabilities.manufacturer.indexOf("Android") != -1);
+		}
 		
 		/** AirAACPlayer is supported on iOS and Android devices. */
 		public static function get isSupported():Boolean
 		{
-			var iOS:Boolean = (Capabilities.manufacturer.indexOf("iOS") != -1);
-			var isAndroid:Boolean = (Capabilities.manufacturer.indexOf("Android") != -1);
-			return iOS || isAndroid;
+			return isIOS() || isAndroid();
 		}
 		
 		public function get state():String
@@ -165,11 +174,22 @@ package com.freshplanet.ane.AirAACPlayer
 		 * 
 		 * @param startTime:int the start time in milliseconds
 		 */
-		public function play(startTime:int = 0):void
+		public function play(startTime:int = 0, myByteArray:ByteArray=null):void
 		{
-			if (!isSupported || state != STATE_READY) return;
+			if (!isSupported || (state != STATE_READY && myByteArray == null)) return;
+
 			startTime = Math.max(0, Math.min(duration, startTime));
-			_context.call("AirAACPlayer_play", startTime);
+
+			if(isIOS())
+			{
+				_context.call("AirAACPlayer_play", startTime, myByteArray);
+			}
+			else if(isAndroid())
+			{
+				_context.call("AirAACPlayer_play", startTime);
+			}
+
+
 		}
 		
 		/** Pause the playback */

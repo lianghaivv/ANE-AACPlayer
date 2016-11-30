@@ -38,17 +38,35 @@ DEFINE_ANE_FUNCTION(AirAACPlayer_load)
 DEFINE_ANE_FUNCTION(AirAACPlayer_play)
 {
     double startTime = FPANE_FREObjectToDouble(argv[0]);
+    
     AirAACPlayerManager *playerManager = getPlayerManagerFromContext(context);
+    
+    FREObject objectBA = argv[1];
+    FREByteArray byteArray;
+    
+    if(objectBA && playerManager)
+    {
+        FREAcquireByteArray(objectBA, &byteArray);
+        NSMutableData *mydata = [NSMutableData dataWithBytes:byteArray.bytes length:byteArray.length];
+        [playerManager setCustomData:mydata];
+        FREReleaseByteArray(objectBA);
+    }
+    
     if (playerManager && playerManager.player)
     {
         if (startTime > 0)
         {
             playerManager.player.currentTime = startTime;
         }
+        
         [playerManager.player play];
     }
     return NULL;
 }
+
+
+
+
 
 DEFINE_ANE_FUNCTION(AirAACPlayer_pause)
 {
